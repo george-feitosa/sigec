@@ -107,34 +107,75 @@ document.getElementById("btnCamera").style.display="none";
 
 }
 
-function sucesso(codigo){
+async function sucesso(codigo){
 
-if(lendo) return;
+    if(lendo) return;
 
-lendo=true;
+    lendo = true;
 
-if(navigator.vibrate){
+    document.getElementById("status").innerHTML =
+    "Consultando participante...";
 
-navigator.vibrate(200);
+    try{
+
+        const resposta = await fetch(
+
+            URL_SCRIPT +
+            "?codigo=" +
+            encodeURIComponent(codigo)
+
+        );
+
+        const dados = await resposta.json();
+
+        if(navigator.vibrate){
+
+            navigator.vibrate(200);
+
+        }
+
+        const audio = new Audio(
+        "https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+
+        audio.play().catch(()=>{});
+
+        if(dados.sucesso){
+
+            document.body.style.background="#2E7D32";
+
+            document.getElementById("status").innerHTML =
+            "✅ " + dados.nome;
+
+        }else{
+
+            document.body.style.background="#C62828";
+
+            document.getElementById("status").innerHTML =
+            "❌ " + dados.mensagem;
+
+        }
+
+        setTimeout(async function(){
+
+            document.body.style.background="#f4f4f4";
+
+            document.getElementById("status").innerHTML =
+            "Aponte para o QR Code";
+
+            lendo = false;
+
+        },1500);
+
+    }catch(e){
+
+        lendo = false;
+
+        document.getElementById("status").innerHTML =
+        "Erro de comunicação.";
+
+    }
 
 }
-
-const audio=new Audio(
-
-"https://actions.google.com/sounds/v1/cartoon/pop.ogg"
-
-);
-
-audio.play().catch(()=>{});
-
-document.getElementById("status").innerHTML="Consultando...";
-
-window.location.href=
-
-URL_SCRIPT+"?codigo="+encodeURIComponent(codigo);
-
-}
-
 function erro(){
 
 }
