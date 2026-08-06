@@ -119,43 +119,51 @@ async function sucesso(codigo){
     try{
 
         const resposta = await fetch(
-
             URL_SCRIPT +
             "?codigo=" +
             encodeURIComponent(codigo)
-
         );
 
         const dados = await resposta.json();
 
         if(navigator.vibrate){
-
             navigator.vibrate(200);
-
         }
 
         const audio = new Audio(
-        "https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+            "https://actions.google.com/sounds/v1/cartoon/pop.ogg"
+        );
 
         audio.play().catch(()=>{});
 
-        if(dados.sucesso){
+        if(dados.status=="OK"){
 
             document.body.style.background="#2E7D32";
 
             document.getElementById("status").innerHTML =
             "✅ " + dados.nome;
 
-        }else{
+        }
+
+        else if(dados.status=="JA_CREDENCIADO"){
+
+            document.body.style.background="#f57c00";
+
+            document.getElementById("status").innerHTML =
+            "⚠️ " + dados.nome + "<br>Já credenciado";
+
+        }
+
+        else{
 
             document.body.style.background="#C62828";
 
             document.getElementById("status").innerHTML =
-            "❌ " + dados.mensagem;
+            "❌ Participante não encontrado";
 
         }
 
-        setTimeout(async function(){
+        setTimeout(function(){
 
             document.body.style.background="#f4f4f4";
 
@@ -166,7 +174,10 @@ async function sucesso(codigo){
 
         },1500);
 
-    }catch(e){
+    }
+    catch(e){
+
+        console.log(e);
 
         lendo = false;
 
@@ -175,8 +186,7 @@ async function sucesso(codigo){
 
     }
 
-}
-function erro(){
+}function erro(){
 
 }
 
