@@ -1,57 +1,47 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Credenciamento - Simpósio de Educação</title>
+<title>Credenciamento</title>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 
 body{
-    margin:0;
-    padding:20px;
-    font-family:Arial;
-    background:#f5f5f5;
-    text-align:center;
+margin:0;
+padding:20px;
+font-family:Arial;
+background:#f4f4f4;
+text-align:center;
 }
 
-h1{
-    color:#1565C0;
+h2{
+color:#1565C0;
 }
 
 #reader{
-    width:320px;
-    margin:auto;
+width:350px;
+max-width:95%;
+margin:auto;
+}
+
+#status{
+margin-top:20px;
+font-size:20px;
+font-weight:bold;
+color:#1565C0;
 }
 
 button{
 
-    margin-top:20px;
-    padding:15px 25px;
-    font-size:18px;
-    border:none;
-    border-radius:8px;
-    background:#1565C0;
-    color:white;
-    cursor:pointer;
-
-}
-
-button:hover{
-
-    background:#0D47A1;
-
-}
-
-#mensagem{
-
-    margin-top:20px;
-    font-size:18px;
-    font-weight:bold;
+padding:14px 30px;
+font-size:18px;
+margin-top:20px;
 
 }
 
@@ -61,77 +51,100 @@ button:hover{
 
 <body>
 
-<h1>📱 Credenciamento</h1>
-
-<p>Simpósio de Educação</p>
+<h2>
+SIGEC<br>
+Credenciamento
+</h2>
 
 <div id="reader"></div>
 
-<button onclick="iniciarScanner()">
+<div id="status">
+Abrindo câmera...
+</div>
+
+<button onclick="abrirCamera()">
 Abrir câmera
 </button>
 
-<div id="mensagem"></div>
-
 <script>
+
+const URL_SCRIPT =
+"https://script.google.com/macros/s/AKfycbz_tkaCt8HMAlCEgkXViu7t--sDCRMJj0JZUWfDzUJPoGGwQ4UNjpgkZ2xkHxjlzzSGjg/exec";
 
 let scanner;
 
-function iniciarScanner(){
+let lendo=false;
 
-    document.getElementById("mensagem").innerHTML =
-    "Abrindo câmera...";
+function abrirCamera(){
 
-    scanner = new Html5Qrcode("reader");
+document.getElementById("status").innerHTML="Abrindo câmera...";
 
-    scanner.start(
+scanner=new Html5Qrcode("reader");
 
-        {
-            facingMode:"environment"
-        },
+scanner.start(
 
-        {
+{ facingMode:"environment" },
 
-            fps:10,
+{
 
-            qrbox:{
-                width:250,
-                height:250
-            }
+fps:10,
 
-        },
+qrbox:250
 
-        function(decodedText){
+},
 
-            document.getElementById("mensagem").innerHTML =
-            "QR Code encontrado.";
+sucesso,
 
-            scanner.stop().then(function(){
+erro
 
-                window.location.href =
-                "https://script.google.com/macros/s/AKfycbz_tkaCt8HMAlCEgkXViu7t--sDCRMJj0JZUWfDzUJPoGGwQ4UNjpgkZ2xkHxjlzzSGjg/exec?codigo="
-                + encodeURIComponent(decodedText);
+).then(()=>{
 
-            });
+document.getElementById("status").innerHTML="Aponte para o QR Code";
 
-        },
+}).catch(function(e){
 
-        function(error){
+document.getElementById("status").innerHTML=e;
 
-            // ignora erros de leitura
-
-        }
-
-    ).catch(function(err){
-
-        document.getElementById("mensagem").innerHTML =
-        "Erro: " + err;
-
-    });
+});
 
 }
+
+function sucesso(codigo){
+
+if(lendo) return;
+
+lendo=true;
+
+if(navigator.vibrate){
+
+navigator.vibrate(200);
+
+}
+
+const audio=new Audio(
+
+"https://actions.google.com/sounds/v1/cartoon/pop.ogg"
+
+);
+
+audio.play().catch(()=>{});
+
+document.getElementById("status").innerHTML="Consultando...";
+
+window.location.href=
+
+URL_SCRIPT+"?codigo="+encodeURIComponent(codigo);
+
+}
+
+function erro(){
+
+}
+
+window.onload=abrirCamera;
 
 </script>
 
 </body>
+
 </html>
