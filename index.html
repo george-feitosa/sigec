@@ -62,7 +62,7 @@ Credenciamento
 Abrindo câmera...
 </div>
 
-<button onclick="abrirCamera()">
+<button id="btnCamera" onclick="abrirCamera()">
 Abrir câmera
 </button>
 
@@ -101,9 +101,7 @@ erro
 
 document.getElementById("status").innerHTML="Aponte para o QR Code";
 
-}).catch(function(e){
-
-document.getElementById("status").innerHTML=e;
+document.getElementById("btnCamera").style.display="none";
 
 });
 
