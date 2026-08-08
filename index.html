@@ -71,41 +71,68 @@ Abrir câmera
 const URL_SCRIPT =
 "https://script.google.com/macros/s/AKfycbz_tkaCt8HMAlCEgkXViu7t--sDCRMJj0JZUWfDzUJPoGGwQ4UNjpgkZ2xkHxjlzzSGjg/exec";
 
-let scanner;
+let scanner = null;
+let lendo = false;
 
-let lendo=false;
+
+/* =========================
+   ABRIR CÂMERA
+========================= */
 
 function abrirCamera(){
 
-document.getElementById("status").innerHTML="Abrindo câmera...";
+    document.getElementById("status").innerHTML =
+    "Abrindo câmera...";
 
-scanner=new Html5Qrcode("reader");
+    if(scanner){
 
-scanner.start(
+        scanner.stop().catch(function(){});
 
-{ facingMode:"environment" },
+    }
 
-{
+    scanner = new Html5Qrcode("reader");
 
-fps:10,
+    scanner.start(
 
-qrbox:250
+        { facingMode: "environment" },
 
-},
+        {
+            fps: 10,
+            qrbox: 250
+        },
 
-sucesso,
+        sucesso,
 
-erro
+        erro
 
-).then(()=>{
+    )
+    .then(function(){
 
-document.getElementById("status").innerHTML="Aponte para o QR Code";
+        document.getElementById("status").innerHTML =
+        "Aponte para o QR Code";
 
-document.getElementById("btnCamera").style.display="none";
+        document.getElementById("btnCamera").style.display =
+        "none";
 
-});
+    })
+    .catch(function(e){
+
+        console.error(e);
+
+        document.getElementById("status").innerHTML =
+        "Erro ao abrir câmera: " + e;
+
+        document.getElementById("btnCamera").style.display =
+        "inline-block";
+
+    });
 
 }
+
+
+/* =========================
+   QR CODE ENCONTRADO
+========================= */
 
 async function sucesso(codigo){
 
@@ -116,84 +143,139 @@ async function sucesso(codigo){
     document.getElementById("status").innerHTML =
     "Consultando participante...";
 
+
     try{
 
         const resposta = await fetch(
+
             URL_SCRIPT +
             "?codigo=" +
             encodeURIComponent(codigo)
+
         );
+
 
         const dados = await resposta.json();
 
+
+        /* VIBRAÇÃO */
+
         if(navigator.vibrate){
-            navigator.vibrate(200);
+
+            navigator.vibrate([150,80,150]);
+
         }
+
+
+        /* SOM */
 
         const audio = new Audio(
             "https://actions.google.com/sounds/v1/cartoon/pop.ogg"
         );
 
-        audio.play().catch(()=>{});
+        audio.play().catch(function(){});
 
-        if(dados.status=="OK"){
 
-            document.body.style.background="#2E7D32";
+        /* =========================
+           CREDENCIAMENTO OK
+        ========================= */
+
+        if(dados.status === "OK"){
+
+            document.body.style.background =
+            "#2E7D32";
 
             document.getElementById("status").innerHTML =
-            "✅ " + dados.nome;
+            "✅ CREDENCIAMENTO REALIZADO<br><br>" +
+            "<strong>" + dados.nome + "</strong>";
 
         }
 
-        else if(dados.status=="JA_CREDENCIADO"){
 
-            document.body.style.background="#f57c00";
+        /* =========================
+           JÁ CREDENCIADO
+        ========================= */
+
+        else if(dados.status === "JA_CREDENCIADO"){
+
+            document.body.style.background =
+            "#F57C00";
 
             document.getElementById("status").innerHTML =
-            "⚠️ " + dados.nome + "<br>Já credenciado";
+            "⚠️ JÁ CREDENCIADO<br><br>" +
+            "<strong>" + dados.nome + "</strong>";
 
         }
+
+
+        /* =========================
+           NÃO ENCONTRADO
+        ========================= */
 
         else{
 
-            document.body.style.background="#C62828";
+            document.body.style.background =
+            "#C62828";
 
             document.getElementById("status").innerHTML =
-            "❌ Participante não encontrado";
+            "❌ PARTICIPANTE NÃO ENCONTRADO";
 
         }
 
+
+        /* =========================
+           VOLTA PARA LEITURA
+        ========================= */
+
         setTimeout(function(){
 
-            document.body.style.background="#f4f4f4";
+            document.body.style.background =
+            "#f4f4f4";
 
             document.getElementById("status").innerHTML =
             "Aponte para o QR Code";
 
             lendo = false;
 
-        },1500);
+        },2000);
+
 
     }
+
     catch(e){
 
-        console.log(e);
+        console.error(e);
 
         lendo = false;
 
         document.getElementById("status").innerHTML =
-        "Erro de comunicação.";
+        "❌ Erro de comunicação.";
 
     }
 
-}function erro(){
+}
+
+
+/* =========================
+   ERROS DE LEITURA
+========================= */
+
+function erro(errorMessage){
+
+    // Não mostra os erros normais
+    // enquanto a câmera procura o QR Code.
 
 }
 
-window.onload=abrirCamera;
+
+/* =========================
+   ABRIR AUTOMATICAMENTE
+========================= */
+
+window.onload = function(){
+
+    abrirCamera();
+
+};
 
 </script>
-
-</body>
-
-</html>
